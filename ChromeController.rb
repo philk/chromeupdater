@@ -8,27 +8,28 @@ class ChromeController < NSWindowController
   attr_accessor :progressIndicator, :downloadLabel, :buildLabel, :updateButton, :cancelButton
 
   def awakeFromNib
-#    @progressIndicator.setIndeterminate = false
-    @progressIndicator.startAnimation(nil)
     @progressIndicator.setIndeterminate(false)
-    @build_delegate = Object.new
-    @zip_delegate = Object.new
   end
   
   def quit(sender)
     exit
   end
   
+  # Update button starts the whole spaghetti mess.
   def update_chrome(sender)
     @updateButton.setEnabled(false)
     get_build
   end
   
+  # This seems like an awful awful hack.  I couldn't find a decent zip library for ObjectiveC.
+  # TODO: Check for Ruby zip library.
   def unzip_chrome
     @downloadLabel.stringValue = "Extracting"
     system("unzip -o /tmp/chrome-mac.zip -d /tmp")
     install_chrome
   end
+  
+  # Removes current Chromium.app, moves new one into place, and removes tmp files
   def install_chrome
     @downloadLabel.stringValue = "Installing"
     if File.exist?("/Applications/Chromium.app")
@@ -36,6 +37,7 @@ class ChromeController < NSWindowController
     end
 	  FileUtils.mv("/tmp/chrome-mac/Chromium.app", "/Applications/")
 	  FileUtils.remove_dir("/tmp/chrome-mac")
+	  FileUtils.rm("/tmp/chrome-mac.zip")
 	  @progressIndicator.stopAnimation(nil)
 	  @progressIndicator.setIndeterminate(false)
 	  @progressIndicator.setDoubleValue(100.00)
@@ -43,6 +45,7 @@ class ChromeController < NSWindowController
     @updateButton.setEnabled(true)
   end
 
+  # Gets the current build number and then runs get_zip
   def get_build
     @progressIndicator.setIndeterminate(true)
     @progressIndicator.startAnimation(nil)
@@ -60,6 +63,8 @@ class ChromeController < NSWindowController
     req = NSURLRequest.requestWithURL(url)
     chrome_build.conn = NSURLConnection.alloc.initWithRequest(req, delegate:chrome_build)
   end
+  
+  # Downloads zip file and begins extraction
   def get_zip(build)
     @progressIndicator.setIndeterminate(false)
     zip = ChromeZip.new
@@ -90,6 +95,7 @@ class ChromeController < NSWindowController
 
 end
 
+# Delegate classes for the get_build and get_zip functions
 class ChromeBuild
   attr_accessor :delegate, :buf, :response, :conn, :build
   def cancel
@@ -154,8 +160,4 @@ class ChromeZip
     end
     @conn = nil
   end
-  
-  # def download(conn, willSendRequest:req, redirectResponse:res)
-  #   req
-  # end
 end

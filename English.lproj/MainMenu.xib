@@ -797,7 +797,7 @@
 							<object class="NSButtonCell" key="NSCell" id="157149189">
 								<int key="NSCellFlags">67239424</int>
 								<int key="NSCellFlags2">134217728</int>
-								<string key="NSContents">Cancel</string>
+								<string key="NSContents">Quit</string>
 								<object class="NSFont" key="NSSupport" id="1035350466">
 									<string key="NSName">LucidaGrande</string>
 									<double key="NSSize">13</double>
